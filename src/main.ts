@@ -13,18 +13,22 @@ async function bootstrap() {
   app.connectMicroservice<MicroserviceOptions>({
     transport: Transport.RMQ,
     options: {
-      urls: [configService.get<string>('RABBITMQ_URL')],
+      urls: [
+        configService.get<string>('RABBITMQ_URL') || 'amqp://localhost:5673',
+      ],
       queue: 'user_queue',
       queueOptions: {
         durable: true,
       },
-      retryAttempts: 5,
-      retryDelay: 3000,
+      maxConnectionAttempts: 5,
     },
   });
 
   await app.startAllMicroservices();
-  await app.listen(configService.get<number>('PORT', 3000));
+
+  // Iniciar o servidor HTTP em uma porta diferente quando rodar localmente
+  const port = process.env.NODE_ENV === 'development' ? 3001 : 3000;
+  await app.listen(port);
 
   logger.log(`Application is running on: ${await app.getUrl()}`);
 }

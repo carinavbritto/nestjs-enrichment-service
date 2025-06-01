@@ -3,9 +3,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 import { UsersModule } from './users/users.module';
-import { UserConsumer } from './users/consumers/user.consumer';
-import { WinstonModule } from 'nest-winston';
-import * as winston from 'winston';
+import { AppController } from './app.controller';
 
 @Module({
   imports: [
@@ -16,6 +14,10 @@ import * as winston from 'winston';
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => ({
         uri: configService.get<string>('MONGODB_URI'),
+        retryAttempts: 5,
+        retryDelay: 3000,
+        useNewUrlParser: true,
+        useUnifiedTopology: true,
       }),
       inject: [ConfigService],
     }),
@@ -26,30 +28,22 @@ import * as winston from 'winston';
         useFactory: async (configService: ConfigService) => ({
           transport: Transport.RMQ,
           options: {
-            urls: [configService.get<string>('RABBITMQ_URL')],
+            urls: [
+              configService.get<string>('RABBITMQ_URL') ||
+                'amqp://localhost:5673',
+            ],
             queue: 'user_queue',
             queueOptions: {
               durable: true,
             },
-            retryAttempts: 5,
-            retryDelay: 3000,
+            maxConnectionAttempts: 5,
           },
         }),
         inject: [ConfigService],
       },
     ]),
-    WinstonModule.forRoot({
-      transports: [
-        new winston.transports.Console({
-          format: winston.format.combine(
-            winston.format.timestamp(),
-            winston.format.json(),
-          ),
-        }),
-      ],
-    }),
     UsersModule,
   ],
-  providers: [UserConsumer],
+  controllers: [AppController],
 })
 export class AppModule {}

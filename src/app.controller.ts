@@ -1,12 +1,16 @@
 import { Controller, Get } from '@nestjs/common';
-import { AppService } from './app.service';
 
 @Controller()
 export class AppController {
-  constructor(private readonly appService: AppService) {}
-
   @Get()
-  getHello(): string {
-    return this.appService.getHello();
+  getHello() {
+    return {
+      message: 'Enrichment Service API',
+      version: '1.0.0',
+      status: 'running',
+      endpoints: {
+        users: '/users/enriched/:uuid',
+      },
+    };
   }
 }
