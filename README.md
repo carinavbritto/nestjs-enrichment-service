@@ -16,6 +16,11 @@ O sistema é composto por três componentes principais:
    - Gerencia dados básicos dos usuários
    - Usa PostgreSQL como banco de dados
    - Publica eventos no RabbitMQ quando um usuário é criado
+   - Serviços disponíveis:
+     - API REST: http://localhost:8000
+     - PostgreSQL: localhost:5432
+     - RabbitMQ: localhost:5672
+     - Redis: localhost:6379
 
 3. **Enrichment Service** (este serviço)
    - Consome eventos do RabbitMQ
@@ -69,19 +74,30 @@ PORT=3000
 NODE_ENV=development
 ```
 
-3. **Inicie os serviços**
+3. **Inicie os serviços na ordem correta**
 
 ```bash
-# No diretório do User Service
+# 1. Primeiro, inicie o User Service
+cd /caminho/para/user-service
 docker-compose up -d
 
-# No diretório do Enrichment Service
+# Aguarde alguns segundos para garantir que todos os serviços do User Service estejam rodando
+docker-compose ps
+
+# 2. Depois, inicie o Enrichment Service
+cd /caminho/para/enrichment-service
 docker-compose up -d
 ```
+
+> ⚠️ **Importante**: O User Service deve ser iniciado primeiro, pois ele cria a rede compartilhada que o Enrichment Service utiliza. Verifique se todos os serviços do User Service estão rodando antes de iniciar o Enrichment Service.
 
 4. **Verifique se os serviços estão rodando**
 
 ```bash
+# No diretório do User Service
+docker-compose ps
+
+# No diretório do Enrichment Service
 docker-compose ps
 ```
 
@@ -105,11 +121,19 @@ curl -X GET http://localhost:3000/users/enriched/123e4567-e89b-12d3-a456-4266141
 
 ## 📊 Acessando os Serviços
 
-- **User Service API**: http://localhost:8000
-- **Enrichment Service API**: http://localhost:3000
+### User Service
+
+- **API REST**: http://localhost:8000
+- **PostgreSQL**: localhost:5432
+- **RabbitMQ**: localhost:5672
 - **RabbitMQ Management UI**: http://localhost:15672
   - Usuário: guest
   - Senha: guest
+- **Redis**: localhost:6379
+
+### Enrichment Service
+
+- **API REST**: http://localhost:3000
 
 ## 🛠️ Tecnologias Utilizadas
 
@@ -120,6 +144,27 @@ curl -X GET http://localhost:3000/users/enriched/123e4567-e89b-12d3-a456-4266141
 - **TypeScript**: Superset JavaScript com tipagem estática
 
 ## ⚠️ Troubleshooting
+
+### Erro de rede não encontrada
+
+Se você receber o erro `network user-service-network declared as external, but could not be found`, significa que o User Service não foi iniciado primeiro. Execute:
+
+```bash
+# 1. Pare o Enrichment Service
+cd /caminho/para/enrichment-service
+docker-compose down
+
+# 2. Inicie o User Service
+cd /caminho/para/user-service
+docker-compose up -d
+
+# 3. Aguarde alguns segundos e verifique se todos os serviços estão rodando
+docker-compose ps
+
+# 4. Inicie o Enrichment Service novamente
+cd /caminho/para/enrichment-service
+docker-compose up -d
+```
 
 ### Serviço não inicia
 

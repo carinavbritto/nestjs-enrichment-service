@@ -30,7 +30,7 @@ import { AppController } from './app.controller';
               configService.get<string>('RABBITMQ_URL') ||
                 'amqp://user-service-rabbitmq:5672',
             ],
-            queue: 'user_queue',
+            queue: 'user_events',
             queueOptions: {
               durable: true,
             },

@@ -14,9 +14,10 @@ async function bootstrap() {
     transport: Transport.RMQ,
     options: {
       urls: [
-        configService.get<string>('RABBITMQ_URL') || 'amqp://localhost:5673',
+        configService.get<string>('RABBITMQ_URL') ||
+          'amqp://user-service-rabbitmq:5672',
       ],
-      queue: 'user_queue',
+      queue: 'user_events',
       queueOptions: {
         durable: true,
       },
@@ -26,10 +27,15 @@ async function bootstrap() {
 
   await app.startAllMicroservices();
 
-  // Iniciar o servidor HTTP em uma porta diferente quando rodar localmente
-  const port = process.env.NODE_ENV === 'development' ? 3001 : 3000;
-  await app.listen(port);
+  // Configurar o servidor HTTP
+  const port = 3000;
+  const host = '0.0.0.0';
 
-  logger.log(`Application is running on: ${await app.getUrl()}`);
+  // Habilitar CORS
+  app.enableCors();
+
+  // Configurar o servidor para escutar em todas as interfaces
+  await app.listen(port, host);
+  logger.log(`Application is running on: http://${host}:${port}`);
 }
 bootstrap();
