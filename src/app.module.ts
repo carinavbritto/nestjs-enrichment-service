@@ -16,8 +16,6 @@ import { AppController } from './app.controller';
         uri: configService.get<string>('MONGODB_URI'),
         retryAttempts: 5,
         retryDelay: 3000,
-        useNewUrlParser: true,
-        useUnifiedTopology: true,
       }),
       inject: [ConfigService],
     }),
