@@ -28,7 +28,7 @@ import { AppController } from './app.controller';
           options: {
             urls: [
               configService.get<string>('RABBITMQ_URL') ||
-                'amqp://localhost:5673',
+                'amqp://user-service-rabbitmq:5672',
             ],
             queue: 'user_queue',
             queueOptions: {
