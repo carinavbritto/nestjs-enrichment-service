@@ -27,65 +27,82 @@ Serviço de enriquecimento de perfis de usuários que escuta eventos de criaçã
 
 ## Funcionalidades
 
-- Escuta eventos `user.created` em uma fila RabbitMQ
-- Extrai `uuid` e `name` dos eventos
-- Gera dados sociais simulados:
-  - LinkedIn: linkedin.com/in/<slug-do-nome>
-  - GitHub: github.com/<slug-do-nome>
-- Persiste os dados enriquecidos no MongoDB
-- Expõe endpoint para consulta dos dados enriquecidos
+- Consome eventos `user.created` do RabbitMQ
+- Gera dados sociais simulados (LinkedIn e GitHub)
+- Persiste dados enriquecidos no MongoDB
+- Expõe endpoint para consulta de dados enriquecidos
 
-## Tecnologias
+## Requisitos
 
-- NestJS
+- Node.js 20+
+- Docker e Docker Compose
 - MongoDB
 - RabbitMQ
-- Winston (logs)
-- Docker
 
-## Configuração do Projeto
+## Configuração
 
-```bash
-# Instalar dependências
-$ pnpm install
+1. Clone o repositório
+2. Copie o arquivo `.env.example` para `.env` e ajuste as variáveis conforme necessário
+3. Instale as dependências:
+   ```bash
+   pnpm install
+   ```
 
-# Configurar variáveis de ambiente
-$ cp .env.example .env
-```
-
-## Executando o Projeto
+## Executando com Docker
 
 ```bash
-# Desenvolvimento
-$ pnpm run start
-
-# Modo watch
-$ pnpm run start:dev
-
-# Produção
-$ pnpm run start:prod
+docker-compose up -d
 ```
 
-## Testes
+## Executando localmente
 
-```bash
-# Testes unitários
-$ pnpm run test
+1. Inicie o MongoDB e RabbitMQ:
 
-# Testes e2e
-$ pnpm run test:e2e
+   ```bash
+   docker-compose up -d mongodb rabbitmq
+   ```
 
-# Cobertura de testes
-$ pnpm run test:cov
+2. Execute a aplicação:
+   ```bash
+   pnpm start:dev
+   ```
+
+## Endpoints
+
+### GET /users/enriched/:uuid
+
+Retorna os dados enriquecidos de um usuário.
+
+Exemplo de resposta:
+
+```json
+{
+  "uuid": "123e4567-e89b-12d3-a456-426614174000",
+  "name": "John Doe",
+  "linkedin": "linkedin.com/in/john-doe",
+  "github": "github.com/john-doe"
+}
 ```
 
-## Docker
+## Eventos RabbitMQ
 
-```bash
-# Construir e iniciar os containers
-$ docker-compose up -d
+### user.created
+
+Evento que dispara o enriquecimento do perfil.
+
+Exemplo de payload:
+
+```json
+{
+  "uuid": "123e4567-e89b-12d3-a456-426614174000",
+  "name": "John Doe"
+}
 ```
 
-## Licença
+## Desenvolvimento
 
-Este projeto está licenciado sob a licença MIT.
+- `pnpm start:dev`: Inicia o servidor em modo desenvolvimento
+- `pnpm build`: Compila o projeto
+- `pnpm start:prod`: Inicia o servidor em modo produção
+- `pnpm test`: Executa os testes
+- `pnpm lint`: Executa o linter

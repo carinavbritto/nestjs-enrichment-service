@@ -1,7 +1,9 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
+import { ClientsModule, Transport } from '@nestjs/microservices';
 import { UsersModule } from './users/users.module';
+import { UserConsumer } from './users/consumers/user.consumer';
 import { WinstonModule } from 'nest-winston';
 import * as winston from 'winston';
 
@@ -17,6 +19,25 @@ import * as winston from 'winston';
       }),
       inject: [ConfigService],
     }),
+    ClientsModule.registerAsync([
+      {
+        name: 'RABBITMQ_SERVICE',
+        imports: [ConfigModule],
+        useFactory: async (configService: ConfigService) => ({
+          transport: Transport.RMQ,
+          options: {
+            urls: [configService.get<string>('RABBITMQ_URL')],
+            queue: 'user_queue',
+            queueOptions: {
+              durable: true,
+            },
+            retryAttempts: 5,
+            retryDelay: 3000,
+          },
+        }),
+        inject: [ConfigService],
+      },
+    ]),
     WinstonModule.forRoot({
       transports: [
         new winston.transports.Console({
@@ -29,5 +50,6 @@ import * as winston from 'winston';
     }),
     UsersModule,
   ],
+  providers: [UserConsumer],
 })
 export class AppModule {}
