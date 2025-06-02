@@ -22,6 +22,10 @@ async function bootstrap() {
         durable: true,
       },
       maxConnectionAttempts: 5,
+      prefetchCount: 1,
+      isGlobalPrefetchCount: true,
+      noAck: false,
+      persistent: true,
     },
   });
 

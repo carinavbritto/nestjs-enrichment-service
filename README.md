@@ -1,6 +1,32 @@
 # Enrichment Service
 
-Serviço de enriquecimento de perfis de usuário que consome eventos de criação de usuário e adiciona dados sociais fictícios. Este serviço é parte de uma arquitetura de microsserviços, onde ele é responsável por enriquecer os dados dos usuários com informações de redes sociais.
+Serviço de enriquecimento de perfis de usuário que consome eventos de criação de usuário e adiciona dados
+sociais fictícios. Este serviço é parte de uma arquitetura de microsserviços, onde ele é responsável por
+enriquecer os dados dos usuários com informações de redes sociais.
+
+## Estratégia de Tratamento de Erros
+
+O serviço implementa uma estratégia robusta de tratamento de erros para garantir a confiabilidade do processamento de mensagens:
+
+### Retry Policy
+
+- Máximo de 3 tentativas para processar cada mensagem
+- Intervalo exponencial entre as tentativas
+- Mensagens com erro de validação não são retentadas
+
+### Dead Letter Queue (DLQ)
+
+- Mensagens que falham após todas as tentativas são enviadas para uma fila DLQ
+- A DLQ permite:
+  - Monitoramento de mensagens problemáticas
+  - Possibilidade de reprocessamento manual
+  - Análise de padrões de falha
+
+### Logging
+
+- Logs detalhados em cada etapa do processamento
+- Rastreamento de erros com stack traces
+- Monitoramento de métricas de processamento
 
 ## 🏗️ Arquitetura do Sistema
 
@@ -189,10 +215,9 @@ docker-compose logs -f rabbitmq
 src/
   ├── users/
   │   ├── controllers/    # Endpoints REST
-  │   ├── services/      # Lógica de negócio
-  │   ├── repositories/  # Acesso ao MongoDB
-  │   ├── schemas/       # Schemas do MongoDB
-  │   └── consumers/     # Consumidores RabbitMQ
-  ├── app.module.ts      # Configuração principal
-  └── main.ts           # Ponto de entrada
+  │   ├── services/       # Lógica de negócio
+  │   ├── repositories/   # Acesso ao banco de dados
+  │   ├── schemas/        # Schemas do MongoDB
+  │   └── consumers/      # Consumidores RabbitMQ
+  └── app.module.ts       # Módulo principal
 ```

@@ -17,7 +17,13 @@ export class UserConsumer {
   @EventPattern('user.created')
   async handleUserCreated(@Payload() data: UserCreatedEvent) {
     try {
-      this.logger.log(`Received user.created event for user ${data.uuid}`);
+      this.logger.log(`Received event with data: ${JSON.stringify(data)}`);
+
+      // Verifica se os dados necessários estão presentes
+      if (!data.uuid || !data.name) {
+        this.logger.error('Missing required fields in event data');
+        return;
+      }
 
       // Normalizar o nome do usuário para URLs
       const normalizedName = this.normalizeName(data.name);
